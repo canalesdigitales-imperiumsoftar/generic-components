@@ -1,0 +1,87 @@
+@tailwind utilities;
+
+/* Estilos adicionales específicos de los componentes */
+.lib-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.lib-modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+/* Clases adicionales para componentes si es necesario */
+.lib-table {
+  font-family: inherit;
+}
+
+.lib-form-field {
+  transition: all 0.2s ease;
+}
+
+/* 👇 AGREGAR ESTOS ESTILOS PARA EL FAB */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* FAB específico con z-index alto */
+.fab-button {
+  position: relative;
+  z-index: 50 !important;
+}
+
+.fab-menu {
+  position: absolute;
+  z-index: 60 !important;
+}
+
+.fab-overlay {
+  position: fixed;
+  z-index: 40 !important;
+}
+
+/* Asegurar que los headers de tabla no interfieran */
+.table-header {
+  position: relative;
+  z-index: 10;
+}
+
+/* Animación del FAB */
+.fab-pulse {
+  animation: fabPulse 2s infinite;
+}
+
+@keyframes fabPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Animación de entrada del menú */
+.fab-menu-enter {
+  animation: fabMenuSlideIn 0.3s ease-out forwards;
+}
+
+@keyframes fabMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
