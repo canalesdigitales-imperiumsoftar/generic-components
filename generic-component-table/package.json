@@ -1,7 +1,7 @@
 {
   "name": "generic-component-table",
   "private": false,
-  "version": "0.0.7",
+  "version": "1.0.1",
   "type": "module",
   "main": "./dist/generic-component-table.umd.js",
   "module": "./dist/generic-component-table.es.js",
@@ -24,8 +24,6 @@
   "dependencies": {
     "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
     "react-easy-crop": "^5.5.3"
   },
   "devDependencies": {
