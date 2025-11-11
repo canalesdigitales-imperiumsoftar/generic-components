@@ -14,6 +14,8 @@ export interface Column<T = any> {
   width?: string | number;
   align?: 'left' | 'center' | 'right';
   render?: (value: any, record?: T, index?: number) => ReactNode;
+  filterType?: 'text' | 'select';
+  filterOptions?: { value: string; label: string }[];
   fixed?: 'left' | 'right';
 }
 
@@ -63,4 +65,7 @@ export interface DataTableProps<T extends BaseEntity> {
   emptyMessage?: string;
   rowKey?: keyof T | ((record: T) => string | number);
   className?: string;
+  filters?: Record<string, string>;
+  filterMode?: 'client' | 'server';
+  externalFilters?: Record<string, string>; // 👈 para rehidratar
 }
