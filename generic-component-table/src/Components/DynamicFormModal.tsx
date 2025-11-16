@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface FormField {
   name: string;
   label: string;
-  type?: string;
+  type?: 'text' | 'textarea' | 'select' | 'toggle' | 'checkbox' | 'number' | 'url';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
@@ -17,8 +17,8 @@ interface DynamicFormModalProps {
   onClose: () => void;
   title: string;
   fields: FormField[];
-  defaultValues?: Record<string, any>;
-  onSubmit: (data: Record<string, any>) => Promise<void>;
+  defaultValues?: Record<string, unknown>;
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -31,7 +31,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
   onSubmit,
   isLoading = false
 }) => {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,7 +42,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
       setFormData(defaultValues);
     } else {
       // Reset form para nuevo registro
-      const initialData: Record<string, any> = {};
+      const initialData: Record<string, unknown> = {};
       fields.forEach(field => {
         initialData[field.name] = '';
       });
@@ -50,7 +50,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
     }
   }, [defaultValues, fields]);
 
-  const handleChange = (name: string, value: any) => {
+  const handleChange = (name: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Limpiar error cuando el usuario empiece a escribir
@@ -78,9 +78,9 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
       }
       
       // Validación especial para URLs si tiene valor
-      if (field.type === 'url' && fieldValue && fieldValue.trim() !== '') {
+      if (field.type === 'url' && fieldValue && (fieldValue as string).trim() !== '') {
         try {
-          new URL(fieldValue);
+          new URL(fieldValue as string);
         } catch {
           newErrors[field.name] = 'Debe ser una URL válida';
         }
@@ -112,7 +112,8 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
   };
 
   const renderField = (field: FormField) => {
-    const value = formData[field.name] || '';
+    const raw = formData[field.name];
+    const value = raw ?? '';
     const hasError = errors[field.name];
 
     console.log(`🔍 Rendering field ${field.name}:`, { 
@@ -131,7 +132,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
           <textarea
             id={field.name}
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             className={`${baseClasses} min-h-[80px] resize-vertical`}
@@ -146,7 +147,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
           <select
             id={field.name}
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             className={baseClasses}
             disabled={submitting}
@@ -160,13 +161,51 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
           </select>
         );
 
+      case 'toggle': {
+        const isActive = value === true || value === 'true' || value === 1 || value === '1';
+        return (
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id={field.name}
+              name={field.name}
+              checked={isActive}
+              onChange={(e) => handleChange(field.name, e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              disabled={submitting}
+            />
+            <span className="ml-3 text-sm font-medium text-gray-700">
+              {isActive ? 'Activo' : 'Inactivo'}
+            </span>
+          </label>
+        );
+      }
+
+      case 'checkbox':
+        return (
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id={field.name}
+              name={field.name}
+              checked={!!value}
+              onChange={(e) => handleChange(field.name, e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              disabled={submitting}
+            />
+            <span className="ml-3 text-sm font-medium text-gray-700">
+              {field.label}
+            </span>
+          </label>
+        );
+
       case 'number':
         return (
           <input
             type="number"
             id={field.name}
             name={field.name}
-            value={value}
+            value={value as number | string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             min={field.min}
@@ -183,7 +222,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             type="url"
             id={field.name}
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder || `Ingresa ${field.label.toLowerCase()}`}
             className={baseClasses}
@@ -197,7 +236,7 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             type="text"
             id={field.name}
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             className={baseClasses}
