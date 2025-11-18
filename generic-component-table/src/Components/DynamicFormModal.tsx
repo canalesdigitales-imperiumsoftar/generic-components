@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface FormField {
   name: string;
   label: string;
-  type?: 'text' | 'textarea' | 'select' | 'toggle' | 'checkbox' | 'number' | 'url';
+  type?: 'text' | 'textarea' | 'select' | 'multiselect' | 'toggle' | 'checkbox' | 'number' | 'url';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
@@ -116,12 +116,6 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
     const value = raw ?? '';
     const hasError = errors[field.name];
 
-    console.log(`🔍 Rendering field ${field.name}:`, { 
-      type: field.type, 
-      value, 
-      options: field.options 
-    });
-
     const baseClasses = `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
       hasError ? 'border-red-500' : 'border-gray-300'
     }`;
@@ -142,7 +136,6 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
         );
 
       case 'select':
-        console.log(`🔽 Select field ${field.name} options:`, field.options);
         return (
           <select
             id={field.name}
@@ -160,7 +153,31 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             ))}
           </select>
         );
-
+      
+      case 'multiselect': {
+        const selectedValues = Array.isArray(value) ? value : (value ? [value] : []);
+        return (
+          <select
+            id={field.name}
+            name={field.name}
+            multiple
+            value={selectedValues}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions, (option) => (option as HTMLOptionElement).value);
+              handleChange(field.name, selected);
+            }}
+            className={`${baseClasses} min-h-[120px]`}
+            disabled={submitting}
+          >
+            {field.options?.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        );
+      }
+      
       case 'toggle': {
         const isActive = value === true || value === 'true' || value === 1 || value === '1';
         return (
