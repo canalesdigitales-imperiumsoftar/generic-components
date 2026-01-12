@@ -8,5 +8,7 @@ export { default as Pagination } from './Components/Table/Pagination';
 export { default as SearchBar } from './Components/Table/SearchBar';
 export { ButtonLoginWithGoogle } from './Components/ButtonGoogle';
 export { default as DynamicFormModal } from './Components/DynamicFormModal';
+export { ArrayField } from './Components/ComplexFields/ArrayField';
+export { ConditionalFields } from './Components/ComplexFields/ConditionalFields';
 export type { BaseEntity, Column, FilterConfig, SortConfig, PaginationInfo, DataTableProps } from './Components/Table/types';
 // Puedes añadir más exports aquí

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { DataTableProps, BaseEntity } from './types';
 
 const DataTable = <T extends BaseEntity>({
@@ -30,10 +30,13 @@ const DataTable = <T extends BaseEntity>({
   const [filters, setFilters] = useState<Record<string, string>>(externalFilters);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   
+  // Usar JSON.stringify para comparar contenido de externalFilters, no referencia
+  const externalFiltersString = JSON.stringify(externalFilters);
+  
   useEffect(() => {
     setFilters(externalFilters);
     setSearchDraft(externalFilters.q || '');
-  }, [externalFilters]);
+  }, [externalFiltersString]);
   
   const getRowKey = (record: T): string | number => {
     if (typeof rowKey === 'function') return rowKey(record);

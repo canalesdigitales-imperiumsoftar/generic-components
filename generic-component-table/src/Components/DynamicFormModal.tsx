@@ -3,13 +3,20 @@ import React, { useState, useEffect } from 'react';
 interface FormField {
   name: string;
   label: string;
-  type?: 'text' | 'textarea' | 'select' | 'multiselect' | 'toggle' | 'checkbox' | 'number' | 'url';
+  type?: 'text' | 'textarea' | 'select' | 'multiselect' | 'toggle' | 'checkbox' | 'number' | 'url' | 'custom';
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
   min?: number;
   max?: number;
   step?: number;
+  // Nuevo: render function para campos custom
+  render?: (props: {
+    value: unknown;
+    onChange: (value: unknown) => void;
+    error?: string;
+    disabled: boolean;
+  }) => React.ReactNode;
 }
 
 interface DynamicFormModalProps {
@@ -20,6 +27,13 @@ interface DynamicFormModalProps {
   defaultValues?: Record<string, unknown>;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
+  // Nuevo: slot para campos adicionales (renderizado después de fields)
+  children?: (props: {
+    formData: Record<string, unknown>;
+    onChange: (name: string, value: unknown) => void;
+    errors: Record<string, string>;
+    submitting: boolean;
+  }) => React.ReactNode;
 }
 
 export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
@@ -29,7 +43,8 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
   fields,
   defaultValues = {},
   onSubmit,
-  isLoading = false
+  isLoading = false,
+  children, // Nuevo
 }) => {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,7 +63,8 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
       });
       setFormData(initialData);
     }
-  }, [defaultValues, fields]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(defaultValues), JSON.stringify(fields.map(f => f.name))]);
 
   const handleChange = (name: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -120,6 +136,16 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
       hasError ? 'border-red-500' : 'border-gray-300'
     }`;
 
+    // Nuevo: renderizado custom
+    if (field.type === 'custom' && field.render) {
+      return field.render({
+        value,
+        onChange: (val) => handleChange(field.name, val),
+        error: hasError,
+        disabled: submitting,
+      });
+    }
+
     switch (field.type) {
       case 'textarea':
         return (
@@ -146,8 +172,8 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             disabled={submitting}
           >
             <option value="">Seleccionar {field.label}</option>
-            {field.options?.map(option => (
-              <option key={option.value} value={option.value}>
+            {field.options?.map((option, idx) => (
+              <option key={option.value || `option-${field.name}-${idx}`} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -169,8 +195,8 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             className={`${baseClasses} min-h-[120px]`}
             disabled={submitting}
           >
-            {field.options?.map(option => (
-              <option key={option.value} value={option.value}>
+            {field.options?.map((option, idx) => (
+              <option key={option.value || `option-${field.name}-${idx}`} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -307,6 +333,18 @@ export const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
                   )}
                 </div>
               ))}
+
+              {/* Nuevo: Render children con contexto del form */}
+              {children && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  {children({
+                    formData,
+                    onChange: handleChange,
+                    errors,
+                    submitting,
+                  })}
+                </div>
+              )}
               
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                 <button
